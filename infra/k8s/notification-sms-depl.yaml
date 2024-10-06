@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-sms-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-sms
+  template:
+    metadata:
+      labels:
+        app: notification-sms
+    spec:
+      containers:
+        - name: notification-sms
+          image: namankr301/notification_sms
+          env:
+            - name: MONGO_URI
+              value: "mongodb://notification-sms-mongo-srv:27017/notification-sms"
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: notify-jwt-secret
+                  key: JWT_KEY
+            - name: RABBITMQ_URI
+              value: "amqp://user:password@rabbitmq-srv.default.svc.cluster.local:5672"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-sms-srv
+spec:
+  selector:
+    app: notification-sms
+  ports:
+    - name: notification-sms
+      protocol: TCP
+      port: 3000
+      targetPort: 3000

@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-auth-depl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-auth
+  template:
+    metadata:
+      labels:
+        app: notification-auth
+    spec:
+      containers:
+        - name: notification-auth
+          image: namankr301/notification_auth
+          env:
+            - name: MONGO_URI
+              value: "mongodb://notification-auth-mongo-srv:27017/notification-auth"
+            - name: JWT_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_KEY
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-auth-srv
+spec:
+  selector:
+    app: notification-auth
+  ports:
+    - name: notification-auth
+      protocol: TCP
+      port: 3000
+      targetPort: 3000
